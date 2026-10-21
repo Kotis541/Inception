@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  my_mariadb:
+    build: .
+    container_name: mariad_test
+
+    volumes:
+      - ./test_secrets:/secrets:ro
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+volumes:
+  mariadb_data:

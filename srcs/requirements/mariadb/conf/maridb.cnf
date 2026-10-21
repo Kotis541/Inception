@@ -1,0 +1,6 @@
+[mariadb]
+max_connections     = 150
+
+[mysqld]
+port                = 3306
+bind-adress         = 0.0.0.0
