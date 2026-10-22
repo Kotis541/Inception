@@ -1,15 +1,32 @@
-version: '3.8'
-
 services:
-  my_mariadb:
-    build: .
-    container_name: mariad_test
-
+  mariadb:
+    build:
+      context: requirements/mariadb
+      dockerfile: Dockerfile
+    image: mariadb
+    restart: always
+    networks:
+      - inception
     volumes:
-      - ./test_secrets:/secrets:ro
       - mariadb_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
+    secrets:
+      - db_password.txt
+      - db_root_password.txt
+
+networks:
+  inception:
+    driver: bridge
 
 volumes:
   mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/vokotera/data/mariadb
+
+secrets:
+  db_password.txt:
+    file: ../secrets/db_password.txt
+  db_root_password.txt:
+    file: ../secrets/db_root_password.txt
