@@ -1,0 +1,32 @@
+services:
+  mariadb:
+    build:
+      context: requirements/mariadb
+      dockerfile: Dockerfile
+    image: mariadb
+    restart: always
+    networks:
+      - inception
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    secrets:
+      - db_password.txt
+      - db_root_password.txt
+
+networks:
+  inception:
+    driver: bridge
+
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/vokotera/data/mariadb
+
+secrets:
+  db_password.txt:
+    file: ../secrets/db_password.txt
+  db_root_password.txt:
+    file: ../secrets/db_root_password.txt
