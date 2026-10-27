@@ -12,6 +12,21 @@ services:
     secrets:
       - db_password.txt
       - db_root_password.txt
+  
+  wordpress:
+    build: requirements/nginx
+    container_name: wordpress
+    restart: always
+    depends_on:
+      - mariadb
+    networks:
+      - inception
+    volumes:
+      - wordpress_data:/var/www/html
+    secrets:
+      - credentials.txt
+      - db_password.txt
+      - db_root_password.txt
 
 networks:
   inception:
@@ -24,9 +39,17 @@ volumes:
       type: none
       o: bind
       device: /home/vokotera/data/mariadb
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/vokotera/data/wordpress
 
 secrets:
   db_password.txt:
     file: ../secrets/db_password.txt
   db_root_password.txt:
     file: ../secrets/db_root_password.txt
+  credentials.txt:
+    file: ../secrets/credentials.txt
