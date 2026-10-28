@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-CONTROL_DIC="/var/www/html"
+WP_PATH="/var/www/html"
 
-echo "[INFO] Entering working directory $CONTROL_DIC"
-cd $CONTROL_FILE
+echo "[INFO] Entering working directory $WP_PATH"
+cd $WP_PATH
 
 db_password=$(cat /run/secrets/db_password.txt)
 
