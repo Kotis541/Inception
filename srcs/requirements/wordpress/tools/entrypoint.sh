@@ -15,7 +15,7 @@ until mysqladmin ping -h mariadb -u "wp_user" -p"$db_password" --silent; do
 done
 echo "[INFO] MariaDB is ready, continuing!"
 
-if [ -f "$CONTROL_FILE/wp-config.php" ]; then
+if [ -f "$WP_PATH/wp-config.php" ]; then
     echo "[INFO] WordPress is already installed. Skipping installation."
 else
     echo "[INFO] Starting clean WordPress installation..."

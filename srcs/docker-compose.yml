@@ -1,14 +1,15 @@
 services:
   mariadb:
-    build:
-      context: requirements/mariadb
-      dockerfile: Dockerfile
+    build: requirements/mariadb
+    container_name: mariadb
     image: mariadb
     restart: always
     networks:
       - inception
     volumes:
       - mariadb_data:/var/lib/mysql
+    env_file:
+      - .env
     secrets:
       - db_password.txt
       - db_root_password.txt
@@ -17,12 +18,15 @@ services:
     build: requirements/wordpress
     container_name: wordpress
     restart: always
-    depends_on:
-      - mariadb
+    image: wordpress
     networks:
       - inception
     volumes:
       - wordpress_data:/var/www/html
+    env_file:
+      - .env
+    depends_on:
+      - mariadb
     secrets:
       - credentials.txt
       - db_password.txt
@@ -32,14 +36,16 @@ services:
     build: requirements/nginx
     container_name: nginx
     restart: always
-    depends_on:
-      - wordpress
-    ports:
-      - "443:443"
+    image: nginx
     networks:
       - inception
     volumes:
-      - wordpress_data:/var/www/html
+      - wordpress_data:/var/www/html:ro  
+    ports:
+      - "443:443"
+    depends_on:
+      - wordpress
+
 
 networks:
   inception:
