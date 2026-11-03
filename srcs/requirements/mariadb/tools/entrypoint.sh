@@ -37,13 +37,10 @@ else
         sleep 1
     done
 
-    WP_DB_NAME="wordpress_db"
-    WP_DB_USER="wp_user"
-
     cat << EOF > /tmp/init.sql
-    CREATE DATABASE IF NOT EXISTS $WP_DB_NAME;
-    CREATE USER IF NOT EXISTS '$WP_DB_USER'@'%' IDENTIFIED BY '$db_password';
-    GRANT ALL PRIVILEGES ON $WP_DB_NAME.* TO '$WP_DB_USER'@'%';
+    CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE;
+    CREATE USER IF NOT EXISTS '$MYSQL_USER'@'%' IDENTIFIED BY '$db_password';
+    GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'%';
     ALTER USER 'root'@'localhost' IDENTIFIED BY '$db_root_password';
     FLUSH PRIVILEGES;
 EOF

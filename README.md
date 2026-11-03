@@ -72,9 +72,10 @@ The goal is to build a secure, isolated, and scalable environment running a Word
 - Secrets directory located at the root of the project:
   ```text
   secrets/
-  ├── credentials.txt
   ├── db_password.txt
-  └── db_root_password.txt
+  ├── db_root_password.txt
+  ├── wp_admin_password.txt
+  └── wp_user_password.txt
   ```
 
 ### Managing the Infrastructure
