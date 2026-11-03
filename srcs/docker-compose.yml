@@ -28,7 +28,8 @@ services:
     depends_on:
       - mariadb
     secrets:
-      - credentials.txt
+      - wp_admin_password.txt
+      - wp_user_password.txt
       - db_password.txt
       - db_root_password.txt
   
@@ -70,5 +71,7 @@ secrets:
     file: ../secrets/db_password.txt
   db_root_password.txt:
     file: ../secrets/db_root_password.txt
-  credentials.txt:
-    file: ../secrets/credentials.txt
+  wp_admin_password.txt:
+    file: ../secrets/wp_admin_password.txt
+  wp_user_password.txt:
+    file: ../secrets/wp_user_password.txt
