@@ -4,6 +4,26 @@ Welcome to the **Inception** project user guide. This document provides clear, s
 
 ---
 
+## Table of Contents
+- [1. Services Provided by the Stack](#1-services-provided-by-the-stack)
+- [2. Starting and Stopping the Project](#2-starting-and-stopping-the-project)
+  - [Starting the Infrastructure](#starting-the-infrastructure)
+  - [Stopping the Infrastructure](#stopping-the-infrastructure)
+  - [Restarting Services](#restarting-services)
+  - [Full Clean Reset](#full-clean-reset)
+- [3. Accessing the Website and Administration Panel](#3-accessing-the-website-and-administration-panel)
+  - [Website Access](#website-access)
+  - [WordPress Admin Panel](#wordpress-admin-panel)
+- [4. Locating and Managing Credentials](#4-locating-and-managing-credentials)
+  - [Default Accounts](#default-accounts)
+  - [Updating Credentials](#updating-credentials)
+- [5. Checking that Services are Running Correctly](#5-checking-that-services-are-running-correctly)
+  - [Check Container Status](#check-container-status)
+  - [Inspect Service Logs](#inspect-service-logs)
+  - [Health Check via Terminal (HTTP / HTTPS)](#health-check-via-terminal-http--https)
+
+---
+
 ## 1. Services Provided by the Stack
 The infrastructure runs three isolated services that cooperate to serve a dynamic WordPress website:
 
@@ -78,18 +98,19 @@ https://vokotera.42.fr/wp-admin
 ---
 
 ## 4. Locating and Managing Credentials
-Sensitive passwords and user logins are never stored in public code or environment files. Instead, they reside in the root `secrets/` directory:
+Sensitive passwords and user logins are never stored in public code or environment files. Instead, passwords reside in the root `secrets/` directory, while non-sensitive identities are configured in `srcs/.env`:
 ```text
 secrets/
-├── credentials.txt          # WordPress administrator and regular user logins
 ├── db_password.txt          # Password for WordPress database user
-└── db_root_password.txt     # Root password for MariaDB administration
+├── db_root_password.txt     # Root password for MariaDB administration
+├── wp_admin_password.txt    # Password for WordPress administrator
+└── wp_user_password.txt     # Password for WordPress regular user
 ```
 
 ### Default Accounts
-Open `secrets/credentials.txt` to find:
-- **Administrator Account:** Has full rights over the WordPress site, plugins, and settings.
-- **Regular User Account:** Author-level user for publishing and editing posts.
+Usernames and emails are defined in `srcs/.env`, and passwords in `secrets/`:
+- **Administrator Account:** Configured via `WP_ADMIN_USER` and `wp_admin_password.txt`. Has full rights over the WordPress site, plugins, and settings.
+- **Regular User Account:** Configured via `WP_USER` and `wp_user_password.txt`. Author-level user for publishing and editing posts.
 
 ### Updating Credentials
 If you need to change user credentials:
