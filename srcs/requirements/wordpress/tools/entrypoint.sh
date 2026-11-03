@@ -48,6 +48,16 @@ else
         --user_pass="$user_password" \
         --role='author' \
         --allow-root
+    
+    echo "[INFO] Configuring Redis host..."
+    wp config set WP_REDIS_HOST redis --allow-root
+    wp config set WP_REDIS_PORT 6379 --raw --allow-root
+
+    echo "[INFO] Installing redis-cache plugin..."
+    wp plugin install redis-cache --activate --allow-root
+
+    echo "[INFO] Enabling Redis object cache..."
+    wp redis enable --allow-root
 
     echo "[SUCCESS] WordPress has been successfully installed!"
 

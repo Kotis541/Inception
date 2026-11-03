@@ -1,7 +1,7 @@
 FROM debian:bookworm
 
 RUN apt update && \
-    apt-get install -y php-fpm php-mysql mariadb-client curl ca-certificates && \
+    apt-get install -y php-fpm php-mysql php-redis mariadb-client curl ca-certificates && \
     curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
     chmod +x wp-cli.phar && \
     mkdir -p /run/php && \
