@@ -56,6 +56,22 @@ services:
     networks:
       - inception
 
+  vsftpd:
+    build: bonus/vsftpd
+    container_name: vsftpd
+    restart: always
+    image: vsftpd
+    networks:
+      - inception
+    volumes:
+      - wordpress_data:/var/www/html
+    ports:
+      - "21:21"
+      - "30000-30100:30000-30100"
+    env_file:
+      - .env
+    secrets:
+      - ftp_pass.txt
 
 networks:
   inception:
@@ -84,3 +100,5 @@ secrets:
     file: ../secrets/wp_admin_password.txt
   wp_user_password.txt:
     file: ../secrets/wp_user_password.txt
+  ftp_pass.txt:
+    file: ../secrets/ftp_pass.txt
