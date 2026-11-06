@@ -1,0 +1,117 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background-color: #0f172a;
+  color: #e2e8f0;
+  line-height: 1.6;
+  padding: 40px 16px;
+}
+
+/* Centered container */
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* Sections with clean padding */
+.section {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+/* Section titles */
+.section h3 {
+  color: #38bdf8;
+  margin-bottom: 16px;
+}
+
+/* Header section */
+.header-section {
+  text-align: center;
+}
+
+.header-section h1 {
+  color: #ffffff;
+  font-size: 2rem;
+  margin-bottom: 6px;
+}
+
+.header-section .subtitle {
+  color: #94a3b8;
+  font-size: 1rem;
+  font-weight: normal;
+  margin-bottom: 14px;
+}
+
+.contact-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.contact-info a {
+  color: #38bdf8;
+  text-decoration: none;
+}
+
+/* Skills tags */
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skill-tag {
+  background-color: #334155;
+  color: #38bdf8;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Cards inside Education & Experience */
+.item-card {
+  background-color: #0f172a;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.item-card:last-child {
+  margin-bottom: 0;
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.item-title {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.badge-date {
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.item-description {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin-top: 6px;
+}
