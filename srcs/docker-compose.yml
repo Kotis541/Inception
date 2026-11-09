@@ -48,6 +48,7 @@ services:
     depends_on:
       - wordpress
       - website
+      - adminer
   
   redis:
     build: bonus/redis
@@ -81,6 +82,16 @@ services:
     image: website
     networks:
       - inception
+  
+  adminer:
+    build: bonus/adminer
+    container_name: adminer
+    restart: always
+    image: adminer
+    networks:
+      - inception
+    depends_on:
+      - mariadb
 
 networks:
   inception:
