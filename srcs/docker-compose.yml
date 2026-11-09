@@ -49,6 +49,7 @@ services:
       - wordpress
       - website
       - adminer
+      - portainer
   
   redis:
     build: bonus/redis
@@ -92,6 +93,17 @@ services:
       - inception
     depends_on:
       - mariadb
+  
+  portainer:
+    build: bonus/portainer
+    container_name: portainer
+    restart: always
+    image: portainer
+    networks:
+      - inception
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data/portainer
 
 networks:
   inception:
@@ -110,6 +122,12 @@ volumes:
       type: none
       o: bind
       device: /home/vokotera/data/wordpress
+  portainer_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/vokotera/data/portainer
 
 secrets:
   db_password.txt:

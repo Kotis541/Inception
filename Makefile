@@ -19,12 +19,16 @@ create_dirs:
 		mkdir -p $(DATA_DIR)/wordpress; \
 		echo "Created $(DATA_DIR)/wordpress"; \
 	fi
+	@if [ ! -d "$(DATA_DIR)/portainer" ]; then \
+		mkdir -p $(DATA_DIR)/portainer; \
+		echo "Created $(DATA_DIR)/portainer"; \
+	fi
 
 clean: down
 
 fclean:
 	docker compose -f $(COMPOSE_FILE) down -v --rmi all
-	docker run --rm -v $(DATA_DIR):/data debian:bookworm rm -rf /data/mariadb /data/wordpress
+	docker run --rm -v $(DATA_DIR):/data debian:bookworm rm -rf /data/mariadb /data/wordpress /data/portainer
 	docker system prune -af
 
 re: fclean all
