@@ -14,18 +14,23 @@ Welcome to the **Inception** project user guide. This document provides clear, s
 - [3. Accessing the Website and Administration Panel](#3-accessing-the-website-and-administration-panel)
   - [Website Access](#website-access)
   - [WordPress Admin Panel](#wordpress-admin-panel)
+  - [Static Website (Bonus)](#static-website-bonus)
+  - [Adminer Database Manager (Bonus)](#adminer-database-manager-bonus)
+  - [Portainer Container Dashboard (Bonus)](#portainer-container-dashboard-bonus)
 - [4. Locating and Managing Credentials](#4-locating-and-managing-credentials)
   - [Default Accounts](#default-accounts)
   - [Updating Credentials](#updating-credentials)
 - [5. Checking that Services are Running Correctly](#5-checking-that-services-are-running-correctly)
   - [Check Container Status](#check-container-status)
   - [Inspect Service Logs](#inspect-service-logs)
-  - [Health Check via Terminal (HTTP / HTTPS)](#health-check-via-terminal-http--https)
+  - [Check Redis Object Cache](#check-redis-object-cache)
+  - [Check FTP Server Access](#check-ftp-server-access)
+  - [Health Check via Terminal (HTTP / HTTPS Endpoints)](#health-check-via-terminal-http--https-endpoints)
 
 ---
 
 ## 1. Services Provided by the Stack
-The infrastructure runs three isolated services that cooperate to serve a dynamic WordPress website:
+The infrastructure runs isolated services that cooperate to serve a dynamic WordPress website:
 
 1. **NGINX (Web Server & Gateway):**
    - The single entry point to the system.
@@ -34,11 +39,33 @@ The infrastructure runs three isolated services that cooperate to serve a dynami
 
 2. **WordPress (Application Engine):**
    - Runs PHP-FPM in the background to execute WordPress PHP scripts.
-   - Generates the dynamic web pages and processes administration task
+   - Generates the dynamic web pages and processes administration tasks.
 
 3. **MariaDB (Database Backend):**
    - Dedicated relational database server.
    - Stores website content, articles, site configuration, and user profiles.
+
+4. **Redis (Object Cache - Bonus):**
+   - High-performance in-memory cache running on internal port `6379`.
+   - Caches repeated database query results in RAM, significantly accelerating page load times.
+   - Operates automatically in the background via the pre-configured `redis-cache` plugin.
+
+5. **FTP Server (vsftpd - Bonus):**
+   - File transfer service listening on command port `21` and passive data ports `30000-30100`.
+   - Mounted directly to the shared WordPress volume (`/var/www/html`).
+   - Enables users and web developers to upload, modify, and download WordPress files using standard FTP clients (FileZilla, WinSCP, curl) without requiring SSH access.
+
+6. **Static Website (Bonus):**
+   - Standalone informational web page served through NGINX at `https://vokotera.42.fr/website/`.
+   - Demonstrates serving independent static assets alongside dynamic WordPress.
+
+7. **Adminer (Database Management - Bonus):**
+   - Single-file database management web interface accessible at `https://vokotera.42.fr/adminer`.
+   - Provides an intuitive GUI to inspect, query, and manage MariaDB tables and records.
+
+8. **Portainer (Container Dashboard - Bonus):**
+   - Centralized web UI for managing and monitoring all Docker containers, networks, and volumes.
+   - Accessible securely via NGINX at `https://vokotera.42.fr/portainer/`.
 
 ---
 
@@ -95,6 +122,31 @@ To manage articles, themes, and users, access the administration dashboard at:
 https://vokotera.42.fr/wp-admin
 ```
 
+### Static Website (Bonus)
+Access the dedicated static informational page at:
+```text
+https://vokotera.42.fr/website/
+```
+
+### Adminer Database Manager (Bonus)
+To inspect and manage MariaDB databases and tables, navigate to:
+```text
+https://vokotera.42.fr/adminer
+```
+*Login parameters:*
+- **System:** `MySQL` (or `MariaDB`)
+- **Server:** `mariadb`
+- **Username:** `wp_user` (or `root`)
+- **Password:** Password from `secrets/db_password.txt` (or `secrets/db_root_password.txt`)
+- **Database:** `wordpress_db`
+
+### Portainer Container Dashboard (Bonus)
+To access the centralized Docker management UI, navigate to:
+```text
+https://vokotera.42.fr/portainer/
+```
+*(On your first visit, set your administrator username and password, then select the local Docker environment).*
+
 ---
 
 ## 4. Locating and Managing Credentials
@@ -103,6 +155,7 @@ Sensitive passwords and user logins are never stored in public code or environme
 secrets/
 ├── db_password.txt          # Password for WordPress database user
 ├── db_root_password.txt     # Root password for MariaDB administration
+├── ftp_pass.txt             # Password for FTP server user
 ├── wp_admin_password.txt    # Password for WordPress administrator
 └── wp_user_password.txt     # Password for WordPress regular user
 ```
@@ -111,6 +164,7 @@ secrets/
 Usernames and emails are defined in `srcs/.env`, and passwords in `secrets/`:
 - **Administrator Account:** Configured via `WP_ADMIN_USER` and `wp_admin_password.txt`. Has full rights over the WordPress site, plugins, and settings.
 - **Regular User Account:** Configured via `WP_USER` and `wp_user_password.txt`. Author-level user for publishing and editing posts.
+- **FTP Account:** Configured via `FTP_USER` in `srcs/.env` and `ftp_pass.txt` in `secrets/`. Accesses the `/var/www/html` root directory.
 
 ### Updating Credentials
 If you need to change user credentials:
@@ -138,13 +192,47 @@ docker logs -f nginx
 docker logs -f wordpress
 # MariaDB database logs
 docker logs -f mariadb
+# Redis cache logs
+docker logs -f redis
+# FTP server logs
+docker logs -f vsftpd
+# Static website logs
+docker logs -f website
+# Adminer logs
+docker logs -f adminer
+# Portainer logs
+docker logs -f portainer
 ```
 
-### Health Check via Terminal (HTTP / HTTPS)
+### Check Redis Object Cache
+Verify that WordPress is actively connected to the Redis cache service:
+```bash
+docker exec wordpress wp redis status --allow-root
+```
+*Expected output:* `Status: Connected` and `Dropin: Valid`.
+
+### Check FTP Server Access
+Test file listing through FTP from the host terminal:
+```bash
+curl -u kotis:$(cat secrets/ftp_pass.txt) ftp://127.0.0.1/
+```
+*Expected output:* Directory listing of WordPress files (`index.php`, `wp-content`, etc.).
+
+### Health Check via Terminal (HTTP / HTTPS Endpoints)
 You can quickly test connectivity directly from your command line:
 ```bash
-# Verify that HTTPS returns HTTP 200 OK
+# Verify WordPress returns HTTP 200 OK
 curl -kI https://vokotera.42.fr
+
+# Verify Static Website returns HTTP 200 OK
+curl -kI https://vokotera.42.fr/website/
+
+# Verify Adminer returns HTTP 200 OK
+curl -kI https://vokotera.42.fr/adminer
+
+# Verify Portainer returns HTTP 200 OK
+curl -kI https://vokotera.42.fr/portainer/
+
 # Verify that insecure HTTP (port 80) is completely blocked / refused
 curl -I http://vokotera.42.fr
 ```

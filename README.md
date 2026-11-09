@@ -1,6 +1,8 @@
 *This project has been created as part of the 42 curriculum by vokotera.*
 
 # Inception
+
+## Table of Contents
 - [Description](#description)
   - [Architecture Overview](#architecture-overview)
 - [Project Description & Technical Choices](#project-description--technical-choices)
@@ -18,7 +20,7 @@
   - [References & Documentation](#references--documentation)
   - [AI Usage Disclosure](#ai-usage-disclosure)
 
-## Table of Contents
+---
 
 ## Description
 The **Inception** project consists of designing and setting up a small multi-service infrastructure entirely containerized using **Docker** and **Docker Compose**. 
@@ -30,6 +32,11 @@ The goal is to build a secure, isolated, and scalable environment running a Word
 - **NGINX:** The only exposed gateway to the host machine. Operates on port `443` using TLSv1.2/TLSv1.3 with a self-signed SSL certificate. It forwards PHP dynamic requests to WordPress via FastCGI.
 - **WordPress (PHP-FPM):** Runs PHP-FPM listening on port `9000` inside the internal Docker network. Interacts with MariaDB to serve website content.
 - **MariaDB:** Database server running on port `3306`, storing all user accounts, posts, and configurations. It communicates strictly through the private bridge network.
+- **Redis Cache (Bonus):** Dedicated in-memory caching service listening on port `6379` within the private bridge network. It provides object caching for WordPress, storing database query results directly in RAM to drastically reduce MariaDB load and decrease page latency.
+- **FTP Server (vsftpd - Bonus):** Secure FTP daemon running on port `21` (with passive range `30000-30100`) mounted directly to the WordPress website volume. Enables remote file management (uploading, editing, and downloading themes, plugins, and media) without requiring direct shell access.
+- **Static Website (Bonus):** Standalone static web application running in its own container, reverse-proxied by NGINX under `/website/`.
+- **Adminer (Bonus):** Lightweight web-based database management interface for inspecting and querying MariaDB, securely routed through NGINX under `/adminer`.
+- **Portainer (Bonus):** Web-based container management and monitoring dashboard connected to the Docker daemon socket, with persistent state under `/home/vokotera/data/portainer`, routed via NGINX under `/portainer/`.
 
 ---
 
@@ -115,6 +122,10 @@ https://vokotera.42.fr
 - [Docker Documentation](https://docs.docker.com/)
 - [NGINX Official Documentation](https://nginx.org/en/docs/)
 - [PHP-FPM Documentation](https://www.php.net/manual/en/install.fpm.php)
+- [Redis Official Documentation](https://redis.io/docs/)
+- [vsftpd Official Documentation & Configuration](https://security.appspot.com/vsftpd/vsftpd_conf.html)
+- [Adminer Official Documentation](https://www.adminer.org/)
+- [Portainer CE Documentation](https://docs.portainer.io/)
 - [TLS - YTB VIDEO](https://www.youtube.com/watch?v=AlE5X1NlHgg)
 - [NGINX - YTB VIDEO](https://www.youtube.com/watch?v=rNF3QJPlagg&t=600s)
 
