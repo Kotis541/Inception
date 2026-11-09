@@ -49,7 +49,7 @@ Verify resolution:
 ping -c 2 vokotera.42.fr
 ```
 
-### Configuration Files (`.env`)
+### Configuration Files (.env)
 
 Create the environment file at `srcs/.env` with non-sensitive deployment parameters:
 ```env
@@ -67,6 +67,11 @@ WP_ADMIN_EMAIL=vokotera@student.42prague.com
 # WordPress Regular User
 WP_USER=besthustler
 WP_USER_EMAIL=votera@seznam.cz
+
+# FTP Server (Bonus)
+FTP_CONTAINER=ftp_server
+FTP_USER=kotis
+FTP_DATA_PATH=/var/www/html
 ```
 
 ### Secrets Setup
@@ -74,19 +79,18 @@ Sensitive credentials must reside in individual text files inside the `secrets/`
 ```bash
 mkdir -p secrets
 echo -n "MySuperSecureDbPassword123" > secrets/db_password.txt
-
 echo -n "MySuperSecureDbRootPassword123" > secrets/db_root_password.txt
-
 echo -n "MySuperSecureWpAdminPass123" > secrets/wp_admin_password.txt
-
 echo -n "MySuperSecureWpUserPass123" > secrets/wp_user_password.txt
-
+echo -n "MySuperSecureFtpPassword123" > secrets/ftp_pass.txt
 chmod 600 secrets/*.txt
 ```
 
 ---
 
 ## 2. Building and Launching the Project
+
+### Using GNU Make
 The root [Makefile](Makefile) orchestrates the build process, directory preparation, and container lifecycle.
 
 | Target | Description | Command |
@@ -112,8 +116,8 @@ docker compose -f srcs/docker-compose.yml down
 ---
 
 ## 3. Container and Volume Management
-# View active containers and port exposures
 
+### Inspecting System Health & Logs
 ```bash
 # View active containers and port exposures
 docker ps
@@ -157,6 +161,60 @@ Developers can interact directly with the database or WordPress engine without e
   docker exec -it mariadb mariadb -u root -p"$(cat secrets/db_root_password.txt)" wordpress_db
   ```
 
+- **Redis Cache Operations:**
+  ```bash
+  # Test Redis responsiveness (returns PONG)
+  docker exec -it redis redis-cli ping
+
+  # Live-monitor Redis cache operations (GET/SET) in real time
+  docker exec -it redis redis-cli monitor
+
+  # Check Redis object cache status from WordPress
+  docker exec -it wordpress wp redis status --allow-root
+  ```
+
+- **FTP Server Operations (vsftpd):**
+  ```bash
+  # List files through FTP
+  curl -u kotis:$(cat secrets/ftp_pass.txt) ftp://127.0.0.1/
+
+  # Upload a test file to WordPress files directory
+  curl -T /tmp/test.txt -u kotis:$(cat secrets/ftp_pass.txt) ftp://127.0.0.1/test.txt
+
+  # Delete test file remotely via FTP
+  curl -u kotis:$(cat secrets/ftp_pass.txt) ftp://127.0.0.1/ -Q "DELE test.txt"
+  ```
+
+- **Static Website Operations:**
+  ```bash
+  # Inspect static website files inside container
+  docker exec -it website ls -la /var/www/website
+
+  # Verify NGINX reverse-proxy response for static website
+  curl -kI https://vokotera.42.fr/website/
+  ```
+
+- **Adminer Database Manager Operations:**
+  ```bash
+  # Verify Adminer PHP-FPM process configuration
+  docker exec -it adminer php-fpm8.2 -t
+
+  # Verify NGINX reverse-proxy response for Adminer
+  curl -kI https://vokotera.42.fr/adminer
+  ```
+
+- **Portainer Container Dashboard Operations:**
+  ```bash
+  # Check Portainer process status and PID 1 execution
+  docker exec -it portainer ps aux
+
+  # Verify Docker daemon communication via socket inside Portainer
+  docker exec -it portainer ls -l /var/run/docker.sock
+
+  # Verify Portainer web interface endpoint
+  curl -kI https://vokotera.42.fr/portainer/
+  ```
+
 ### Network and Volume Inspection
 ```bash
 # Inspect custom bridge network
@@ -165,11 +223,14 @@ docker network inspect srcs_inception
 # Inspect named volume mounts
 docker volume inspect srcs_mariadb_data
 docker volume inspect srcs_wordpress_data
+docker volume inspect srcs_portainer_data
 ```
 
 ---
 
 ## 4. Data Storage & Persistence Architecture
+
+### Storage Locations
 In accordance with 42 project requirements, persistent data is stored directly on the host filesystem under `/home/vokotera/data`:
 
 | Service | Container Mount Point | Host Storage Path | Driver Configuration |
@@ -177,14 +238,21 @@ In accordance with 42 project requirements, persistent data is stored directly o
 | **MariaDB** | `/var/lib/mysql` | `/home/vokotera/data/mariadb` | Local bind mount (`type: none`, `o: bind`) |
 | **WordPress** | `/var/www/html` | `/home/vokotera/data/wordpress` | Local bind mount (`type: none`, `o: bind`) |
 | **NGINX** | `/var/www/html:ro` | `/home/vokotera/data/wordpress` | Read-only shared mount |
+| **vsftpd** | `/var/www/html` | `/home/vokotera/data/wordpress` | Read/write shared mount |
+| **Portainer** | `/data/portainer` | `/home/vokotera/data/portainer` | Local bind mount (`type: none`, `o: bind`) |
 
 ### Persistence Model
 1. **Named Volumes with Host Bind:**  
-   Docker manages `mariadb_data` and `wordpress_data` as named volumes, but delegates the underlying storage directly to host directory bind points via `driver_opts`.
+   Docker manages `mariadb_data`, `wordpress_data`, and `portainer_data` as named volumes, but delegates the underlying storage directly to host directory bind points via `driver_opts`.
 2. **Crash & Restart Resilience:**  
    When containers are stopped or recreated (`make down` followed by `make up`), the files remain intact on the host. The entrypoint scripts check for existing database files (`/var/lib/mysql/mysql`) and WordPress configs (`/var/www/html/wp-config.php`), bypassing fresh installation if valid data already exists.
-
+3. **Redis In-Memory Ephemeral Storage:**  
+   Redis operates purely in-memory as a high-speed volatile cache. It intentionally does not mount a persistent host volume because all cached database query objects are ephemeral and can be safely re-generated on demand from MariaDB upon container recreation or cache misses.
+4. **Portainer Persistence & Docker Socket Integration:**  
+   Portainer stores its internal configuration, user databases (`portainer.db`), and dashboard settings persistently in `/home/vokotera/data/portainer`. To interact with and manage the host's Docker engine without running privileged daemons, Portainer mounts the host's Docker UNIX socket (`/var/run/docker.sock`).
+5. **Stateless Bonus Services (Adminer & Website):**  
+   The static website and Adminer services are completely stateless. Their application code and static HTML/CSS files are baked directly into their respective container images during `docker compose build`, requiring no external storage volumes.
 
 ### Lifecycle and Clean Up
 - **Preserved State:** `make down` keeps `/home/vokotera/data` completely intact.
-- **Complete Purge:** `make fclean` executes a privileged helper container (`debian:bookworm`) to safely wipe the root-owned files inside `/home/vokotera/data/mariadb` and `/home/vokotera/data/wordpress` without prompting the developer for `sudo` passwords.
+- **Complete Purge:** `make fclean` executes a privileged helper container (`debian:bookworm`) to safely wipe the root-owned files inside `/home/vokotera/data/mariadb`, `/home/vokotera/data/wordpress`, and `/home/vokotera/data/portainer` without prompting the developer for `sudo` passwords.
