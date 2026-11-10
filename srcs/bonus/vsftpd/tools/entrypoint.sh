@@ -15,7 +15,7 @@ fi
 
 FTP_PASS=$(cat "$SECRET_FILE")
 
-if ! id "$FTP_USER" &>/dev/null; then
+if ! id "$FTP_USER" >/dev/null 2>&1; then
     echo "[INFO] Making new user '$FTP_USER'.."
 
     useradd -d /var/www/html -s /bin/sh "$FTP_USER"

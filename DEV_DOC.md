@@ -188,7 +188,7 @@ Developers can interact directly with the database or WordPress engine without e
 - **Static Website Operations:**
   ```bash
   # Inspect static website files inside container
-  docker exec -it website ls -la /var/www/website
+  docker exec -it website ls -la /var/www/html
 
   # Verify NGINX reverse-proxy response for static website
   curl -kI https://vokotera.42.fr/website/
@@ -196,8 +196,11 @@ Developers can interact directly with the database or WordPress engine without e
 
 - **Adminer Database Manager Operations:**
   ```bash
-  # Verify Adminer PHP-FPM process configuration
-  docker exec -it adminer php-fpm8.2 -t
+  # Check Adminer running processes via Docker
+  docker top adminer
+
+  # Verify Adminer PHP CLI version
+  docker exec -it adminer php -v
 
   # Verify NGINX reverse-proxy response for Adminer
   curl -kI https://vokotera.42.fr/adminer
@@ -205,8 +208,11 @@ Developers can interact directly with the database or WordPress engine without e
 
 - **Portainer Container Dashboard Operations:**
   ```bash
-  # Check Portainer process status and PID 1 execution
-  docker exec -it portainer ps aux
+  # Check Portainer process status and execution via Docker
+  docker top portainer
+
+  # Verify Portainer binary version
+  docker exec -it portainer /opt/portainer/portainer --version
 
   # Verify Docker daemon communication via socket inside Portainer
   docker exec -it portainer ls -l /var/run/docker.sock
